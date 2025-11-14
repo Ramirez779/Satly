@@ -1,5 +1,13 @@
 # Satly – Plataforma Educativa Gamificada con Recompensas en Satoshis
 
+---
+# Grupo 42
+## conformado por:
+
+- Manrique Antonio Portillo Ramirez
+- Leonardo Daniel Perez Borja
+- Jonathan Daniel Penado Sanchez
+
 Satly es una app web que enseña conceptos de **Bitcoin** y **Lightning Network** mediante quizzes interactivos.  
 Cuando el usuario responde correctamente, puede reclamar una recompensa en **satoshis** que se paga a través de **LNBits** usando una factura Lightning (BOLT11).
 ---
