@@ -1,20 +1,32 @@
+// Componente principal del quiz de Satly
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
+// URL base del backend de Satly
 const API_BASE_URL = 'http://localhost:3000/api/satly';
+// Tiempo límite para responder (segundos)
 const QUIZ_TIME_LIMIT = 20;
 
 const SatlyApp = () => {
+    // Datos del quiz (pregunta y opciones)
     const [quizData, setQuizData] = useState(null);
+    // Respuesta seleccionada por el usuario
     const [selectedAnswer, setSelectedAnswer] = useState(null);
+    // Estado del quiz: loading | active | answered | reward | error
     const [quizStatus, setQuizStatus] = useState('loading');
+    // Mensaje final del resultado (correcto / incorrecto / error)
     const [quizResult, setQuizResult] = useState('');
+    // Contador regresivo en segundos
     const [timer, setTimer] = useState(QUIZ_TIME_LIMIT);
 
+    // Factura Lightning que pega el usuario
     const [invoice, setInvoice] = useState('');
+    // Mensaje sobre el estado del pago de la recompensa
     const [rewardStatus, setRewardStatus] = useState('');
+    // Hash del pago realizado
     const [rewardHash, setRewardHash] = useState(null);
 
+    // Enviar respuesta del quiz al backend
     const handleAnswerSubmission = async (answer) => {
         if (quizStatus !== 'active') return;
 
@@ -37,7 +49,9 @@ const SatlyApp = () => {
         }
     };
 
+    // Reclamar recompensa enviando la factura Lightning al backend
     const handleRewardClaim = async () => {
+        // Validación rápida de formato de invoice
         if (!invoice || !invoice.startsWith('lnbc')) {
             setRewardStatus('❌ Por favor, ingresa una factura Lightning válida.');
             return;
@@ -57,6 +71,7 @@ const SatlyApp = () => {
         }
     };
 
+    // Cargar un quiz desde el backend al montar el componente
     useEffect(() => {
         const fetchQuiz = async () => {
             try {
@@ -71,22 +86,26 @@ const SatlyApp = () => {
         fetchQuiz();
     }, []);
 
+    // Manejar el temporizador del quiz
     useEffect(() => {
         if (quizStatus === 'active') {
             const countdown = setInterval(() => {
                 setTimer((prevTime) => {
                     if (prevTime === 1) {
                         clearInterval(countdown);
+                        // Si se acaba el tiempo, se envía respuesta nula
                         handleAnswerSubmission(null);
                         return 0;
                     }
                     return prevTime - 1;
                 });
             }, 1000);
+            // Limpiar intervalo cuando cambie el estado o se desmonte
             return () => clearInterval(countdown);
         }
     }, [quizStatus]);
 
+    // Estados simples de carga y error
     if (quizStatus === 'loading') {
         return <div style={styles.loading}>Cargando Quiz... ⚡</div>;
     }
@@ -97,7 +116,7 @@ const SatlyApp = () => {
 
     return (
         <div style={styles.container}>
-
+            {/* Encabezado con contador y título */}
             <header style={styles.header}>
                 <div style={styles.timerBox}>
                     <span style={styles.timerText}>{timer}s</span>
@@ -105,6 +124,7 @@ const SatlyApp = () => {
                 <h1 style={styles.questionTitle}>Pregunta de Satoshis</h1>
             </header>
 
+            {/* Contenido principal del quiz */}
             <main style={styles.quizContent}>
                 <h2 style={styles.questionText}>{quizData.question}</h2>
 
@@ -114,7 +134,10 @@ const SatlyApp = () => {
                             key={index}
                             style={{
                                 ...styles.optionButton,
-                                backgroundColor: selectedAnswer === option ? styles.optionButton.selectedBg : styles.optionButton.defaultBg,
+                                backgroundColor:
+                                    selectedAnswer === option
+                                        ? styles.optionButton.selectedBg
+                                        : styles.optionButton.defaultBg,
                                 opacity: quizStatus === 'answered' || quizStatus === 'reward' ? 0.6 : 1,
                                 cursor: quizStatus === 'active' ? 'pointer' : 'default',
                             }}
@@ -126,13 +149,18 @@ const SatlyApp = () => {
                     ))}
                 </div>
 
-                {(quizStatus === 'answered' || quizStatus === 'reward') && <p style={styles.resultText.incorrect}>{quizResult}</p>}
+                {(quizStatus === 'answered' || quizStatus === 'reward') && (
+                    <p style={styles.resultText.incorrect}>{quizResult}</p>
+                )}
             </main>
 
+            {/* Sección para reclamar sats cuando la respuesta fue correcta */}
             {quizStatus === 'reward' && (
                 <div style={styles.rewardBox}>
                     <h3 style={styles.rewardTitle}>🎉 Reclama tus Satoshis</h3>
-                    <p style={styles.rewardDescription}>Genera una factura Lightning de **50 satoshis** en tu wallet y pégala aquí.</p>
+                    <p style={styles.rewardDescription}>
+                        Genera una factura Lightning de **50 satoshis** en tu wallet y pégala aquí.
+                    </p>
 
                     <textarea
                         placeholder="Pega aquí tu factura Lightning (lnbc...)"
@@ -150,13 +178,18 @@ const SatlyApp = () => {
                     </button>
 
                     <p style={styles.rewardStatusText}>Estado: {rewardStatus}</p>
-                    {rewardHash && <p style={styles.rewardHashText}>Hash: {rewardHash.substring(0, 15)}...</p>}
+                    {rewardHash && (
+                        <p style={styles.rewardHashText}>
+                            Hash: {rewardHash.substring(0, 15)}...
+                        </p>
+                    )}
                 </div>
             )}
         </div>
     );
 };
 
+// Estilos inline para el layout del quiz
 const styles = {
     container: {
         maxWidth: '800px',

@@ -1,29 +1,35 @@
+// Quiz de 20 preguntas con recompensa en sats
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
+// URL del backend de Satly
 const API_BASE_URL = 'http://localhost:3000/api/satly';
+// Tiempo por pregunta (segundos)
 const QUIZ_TIME_LIMIT = 10;
+// Mínimo de respuestas correctas para ganar premio
 const MIN_CORRECT_FOR_REWARD = 20;
 
 const QuizSession = ({ quizId, onQuizFinish }) => {
-    // ... (Estados y lógica se mantienen iguales)
+    // Preguntas del quiz
     const [questions, setQuestions] = useState([]);
     const [currentQIndex, setCurrentQIndex] = useState(0);
-    const [sessionStatus, setSessionStatus] = useState('loading');
+    const [sessionStatus, setSessionStatus] = useState('loading'); // loading | active | finished | error
     const [score, setScore] = useState(0);
-    const [feedback, setFeedback] = useState(null);
+    const [feedback, setFeedback] = useState(null); // info de respuesta correcta/incorrecta
 
+    // Timer y control de bloqueo entre preguntas
     const [timer, setTimer] = useState(QUIZ_TIME_LIMIT);
     const [isFrozen, setIsFrozen] = useState(false);
     const [selectedOption, setSelectedOption] = useState(null);
 
+    // Estado para reclamar la recompensa
     const [invoice, setInvoice] = useState('');
     const [rewardStatus, setRewardStatus] = useState('');
     const [rewardHash, setRewardHash] = useState(null);
 
     const currentQuestion = questions[currentQIndex];
 
-    // 1. Cargar las 20 preguntas al iniciar
+    // 1. Cargar las 20 preguntas al iniciar la sesión
     useEffect(() => {
         const fetchQuizQuestions = async () => {
             try {
@@ -38,8 +44,9 @@ const QuizSession = ({ quizId, onQuizFinish }) => {
         fetchQuizQuestions();
     }, [quizId]);
 
-    // 2. Manejar Respuesta (Validación con Backend)
+    // 2. Enviar respuesta y procesar feedback (correcta / incorrecta)
     const handleAnswer = useCallback(async (answer) => {
+        // Evita responder varias veces mientras la pregunta está congelada
         if (isFrozen && answer !== null) return;
 
         setIsFrozen(true);
@@ -57,6 +64,7 @@ const QuizSession = ({ quizId, onQuizFinish }) => {
             isCorrect = response.data.isCorrect;
             correctAnswer = response.data.correctAnswer;
         } else {
+            // Si se acaba el tiempo, se toma la correcta de la propia pregunta
             correctAnswer = currentQuestion.correctAnswer;
         }
 
@@ -67,6 +75,7 @@ const QuizSession = ({ quizId, onQuizFinish }) => {
             setFeedback({ isCorrect: false, answer: correctAnswer });
         }
 
+        // Pausa breve para mostrar feedback antes de pasar a la siguiente
         setTimeout(() => {
             if (currentQIndex < questions.length - 1) {
                 setCurrentQIndex(prevIndex => prevIndex + 1);
@@ -80,13 +89,14 @@ const QuizSession = ({ quizId, onQuizFinish }) => {
         }, 2000);
     }, [quizId, currentQIndex, questions, isFrozen, currentQuestion]);
 
-    // 3. Lógica del Temporizador
+    // 3. Lógica del temporizador por pregunta
     useEffect(() => {
         if (sessionStatus === 'active' && !isFrozen) {
             const countdown = setInterval(() => {
                 setTimer((prevTime) => {
                     if (prevTime === 1) {
                         clearInterval(countdown);
+                        // Si se acaba el tiempo, cuenta como no respondida
                         handleAnswer(null);
                         return 0;
                     }
@@ -97,7 +107,7 @@ const QuizSession = ({ quizId, onQuizFinish }) => {
         }
     }, [sessionStatus, isFrozen, handleAnswer]);
 
-    // 4. Reclamo de Recompensa (handleRewardClaim)
+    // 4. Reclamo de recompensa (pago de invoice Lightning)
     const handleRewardClaim = async () => {
         if (!invoice || !invoice.startsWith('lnbc')) {
             setRewardStatus('❌ Por favor, ingresa una factura Lightning válida.');
@@ -118,7 +128,7 @@ const QuizSession = ({ quizId, onQuizFinish }) => {
         }
     };
 
-    // --- RENDERS ---
+    // --- RENDERS SEGÚN ESTADO ---
 
     if (sessionStatus === 'loading') {
         return <div style={styles.loading}>Cargando {quizId}...</div>;
@@ -143,10 +153,9 @@ const QuizSession = ({ quizId, onQuizFinish }) => {
         );
     }
 
-    // Vista ACTIVA
+    // Vista cuando el quiz está activo
     return (
         <div style={styles.container}>
-
             <header style={styles.header}>
                 <button onClick={onQuizFinish} style={styles.backButton}>← Menú Principal</button>
                 <div style={styles.progress}>
@@ -172,19 +181,45 @@ const QuizSession = ({ quizId, onQuizFinish }) => {
                         const isSelected = option === selectedOption;
                         let optionStyle = { ...styles.optionButton };
 
-                        // Aplicar estilos de feedback si está congelado
+                        // Estilos según feedback (correcta / incorrecta / otras opciones)
                         if (isFrozen && feedback) {
                             if (feedback.isCorrect && option === selectedOption) {
-                                optionStyle = { ...optionStyle, backgroundColor: styles.colors.correctAnswer, boxShadow: styles.optionButton.shadowCorrect, color: styles.colors.textPrimary };
+                                optionStyle = {
+                                    ...optionStyle,
+                                    backgroundColor: styles.colors.correctAnswer,
+                                    boxShadow: styles.optionButton.shadowCorrect,
+                                    color: styles.colors.textPrimary
+                                };
                             } else if (!feedback.isCorrect && option === selectedOption) {
-                                optionStyle = { ...optionStyle, backgroundColor: styles.colors.incorrectAnswer, boxShadow: styles.optionButton.shadowIncorrect, color: styles.colors.textPrimary };
+                                optionStyle = {
+                                    ...optionStyle,
+                                    backgroundColor: styles.colors.incorrectAnswer,
+                                    boxShadow: styles.optionButton.shadowIncorrect,
+                                    color: styles.colors.textPrimary
+                                };
                             } else if (!feedback.isCorrect && option === feedback.answer) {
-                                optionStyle = { ...optionStyle, backgroundColor: styles.colors.correctAnswer, boxShadow: styles.optionButton.shadowCorrect, color: styles.colors.textPrimary };
+                                optionStyle = {
+                                    ...optionStyle,
+                                    backgroundColor: styles.colors.correctAnswer,
+                                    boxShadow: styles.optionButton.shadowCorrect,
+                                    color: styles.colors.textPrimary
+                                };
                             } else {
-                                optionStyle = { ...optionStyle, opacity: 0.6, backgroundColor: styles.colors.surface, color: styles.colors.textPrimary };
+                                optionStyle = {
+                                    ...optionStyle,
+                                    opacity: 0.6,
+                                    backgroundColor: styles.colors.surface,
+                                    color: styles.colors.textPrimary
+                                };
                             }
-                        } else if (isSelected) { // Estilos de selección activa
-                            optionStyle = { ...optionStyle, backgroundColor: styles.colors.accent, boxShadow: styles.optionButton.shadowSelected, color: styles.colors.textPrimary }; // AMARILLO en selección
+                        } else if (isSelected) {
+                            // Estilo cuando el usuario selecciona una opción
+                            optionStyle = {
+                                ...optionStyle,
+                                backgroundColor: styles.colors.accent,
+                                boxShadow: styles.optionButton.shadowSelected,
+                                color: styles.colors.textPrimary
+                            };
                         }
 
                         return (
@@ -205,18 +240,23 @@ const QuizSession = ({ quizId, onQuizFinish }) => {
 };
 
 
-// --- PANTALLA DE RESULTADOS (FINISHEDSCREEN) ---
+// --- PANTALLA FINAL CON RESULTADOS Y RECOMPENSA ---
 const FinishedScreen = ({ score, total, onClaim, invoice, setInvoice, rewardStatus, rewardHash, onGoBack }) => {
     const isWinner = score >= MIN_CORRECT_FOR_REWARD;
+
     return (
         <div style={styles.finishedContainer}>
             <h2 style={styles.finishedTitle}>¡QUIZ TERMINADO!</h2>
-            <p style={styles.finalScore}>Tu Puntaje Final: <span style={styles.scoreNumber}>{score} / {total}</span></p>
+            <p style={styles.finalScore}>
+                Tu Puntaje Final: <span style={styles.scoreNumber}>{score} / {total}</span>
+            </p>
 
             {isWinner ? (
                 <>
                     <h3 style={styles.rewardTitleWin}>¡Ganaste la Recompensa! 🏆</h3>
-                    <p style={styles.rewardDescription}>¡Felicidades! Has respondido correctamente a {score} preguntas. Genera tu factura Lightning (50 sats) para reclamar tu premio.</p>
+                    <p style={styles.rewardDescription}>
+                        Has respondido correctamente a {score} preguntas. Genera tu factura Lightning (50 sats) para reclamar tu premio.
+                    </p>
 
                     <textarea
                         placeholder="Pega aquí tu factura Lightning (50 sats)"
@@ -240,7 +280,9 @@ const FinishedScreen = ({ score, total, onClaim, invoice, setInvoice, rewardStat
             ) : (
                 <>
                     <h3 style={styles.rewardTitleLose}>Necesitas {MIN_CORRECT_FOR_REWARD} respuestas correctas.</h3>
-                    <p style={styles.rewardDescription}>Vuelve a intentarlo para ganar satoshis reales. ¡La práctica hace al maestro!</p>
+                    <p style={styles.rewardDescription}>
+                        Vuelve a intentarlo para ganar satoshis reales. ¡La práctica hace al maestro!
+                    </p>
                 </>
             )}
 
@@ -250,16 +292,16 @@ const FinishedScreen = ({ score, total, onClaim, invoice, setInvoice, rewardStat
 };
 
 
-// --- ESTILOS COMPARTIDOS (Negro y Amarillo BOLD) ---
+// --- ESTILOS COMPARTIDOS (Negro y Amarillo) ---
 const styles = {
     colors: {
-        primary: '#1C1B1F',        // Negro
-        primaryLight: '#333333',   // Gris oscuro
-        accent: '#FFD700',         // Dorado/Amarillo
-        surface: '#FFFFFF',        // Blanco
+        primary: '#1C1B1F',
+        primaryLight: '#333333',
+        accent: '#FFD700',
+        surface: '#FFFFFF',
         textPrimary: '#1C1B1F',
-        correctAnswer: '#4CAF50',  // Verde (Se mantiene para corrección)
-        incorrectAnswer: '#F44336' // Rojo (Se mantiene para error)
+        correctAnswer: '#4CAF50',
+        incorrectAnswer: '#F44336'
     },
     container: {
         maxWidth: '100%',
@@ -279,16 +321,16 @@ const styles = {
         alignItems: 'center',
         justifyContent: 'space-between',
         marginBottom: '30px',
-        borderBottom: `3px solid ${'#FFD700'}`, // Borde Dorado
+        borderBottom: `3px solid #FFD700`,
         paddingBottom: '15px'
     },
     backButton: {
         padding: '12px 20px',
-        backgroundColor: '#1C1B1F', // Negro
-        color: '#FFD700', // Dorado
+        backgroundColor: '#1C1B1F',
+        color: '#FFD700',
         borderRadius: '24px',
         border: 'none',
-        fontWeight: '900', // BOLD
+        fontWeight: '900',
         cursor: 'pointer',
         fontSize: '1em',
         boxShadow: '0 2px 4px rgba(0,0,0,0.4)',
@@ -299,7 +341,7 @@ const styles = {
         color: '#616161'
     },
     timerBox: {
-        backgroundColor: '#1C1B1F', // Negro
+        backgroundColor: '#1C1B1F',
         borderRadius: '50%',
         width: '70px',
         height: '70px',
@@ -309,7 +351,7 @@ const styles = {
         boxShadow: '0 4px 8px rgba(0,0,0,0.4)'
     },
     timerText: {
-        color: '#FFD700', // Dorado
+        color: '#FFD700',
         fontSize: '2em',
         fontWeight: '900'
     },
@@ -347,7 +389,7 @@ const styles = {
         borderRadius: '16px',
         fontSize: '1.3em',
         fontWeight: '900',
-        border: '3px solid #1C1B1F', // Borde Negro
+        border: '3px solid #1C1B1F',
         transition: 'all 0.3s ease',
         color: '#1C1B1F',
         backgroundColor: '#FFFFFF',
@@ -356,10 +398,6 @@ const styles = {
         shadowCorrect: '0 0 10px #4CAF50',
         shadowIncorrect: '0 0 10px #F44336',
         shadowSelected: '0 3px 6px #FFD700',
-        '&:hover': {
-            backgroundColor: '#FFD700', // Amarillo al pasar el mouse
-            color: '#1C1B1F'
-        }
     },
     finishedContainer: {
         textAlign: 'center',
@@ -404,7 +442,7 @@ const styles = {
         width: '60%',
         padding: '15px',
         borderRadius: '12px',
-        border: `2px solid ${'#1C1B1F'}`,
+        border: '2px solid #1C1B1F',
         marginBottom: '15px',
         fontSize: '1em',
         boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1)'
