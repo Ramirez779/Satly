@@ -331,3 +331,8 @@ y deja que `server.js` sirva el contenido desde `frontend/dist` (ya está config
 - El monto de recompensa actual está fijado en **50 satoshis** (`REWARD_AMOUNT_SATS`) pero se puede ajustar en `satlyController.js`.
 
 Satly demuestra que aprender Bitcoin puede ser algo práctico, divertido y con incentivos reales en satoshis.
+
+# Como realizar purebas
+
+Para probar solo se modifican las credenciales del .env
+
