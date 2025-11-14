@@ -107,7 +107,7 @@ const SatlyApp = () => {
 
     // Estados simples de carga y error
     if (quizStatus === 'loading') {
-        return <div style={styles.loading}>Cargando Quiz... ⚡</div>;
+        return <div style={styles.loading}>Cargando Quiz...</div>;
     }
 
     if (quizStatus === 'error') {
@@ -157,7 +157,7 @@ const SatlyApp = () => {
             {/* Sección para reclamar sats cuando la respuesta fue correcta */}
             {quizStatus === 'reward' && (
                 <div style={styles.rewardBox}>
-                    <h3 style={styles.rewardTitle}>🎉 Reclama tus Satoshis</h3>
+                    <h3 style={styles.rewardTitle}>🎉 Reclama tus Sats!</h3>
                     <p style={styles.rewardDescription}>
                         Genera una factura Lightning de **50 satoshis** en tu wallet y pégala aquí.
                     </p>

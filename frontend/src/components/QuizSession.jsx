@@ -286,7 +286,7 @@ const FinishedScreen = ({ score, total, onClaim, invoice, setInvoice, rewardStat
                 </>
             )}
 
-            <button onClick={onGoBack} style={styles.finishedBackButton}>Volver al Menú</button>
+            <button onClick={onGoBack} style={styles.finishedBackButton}>Menú</button>
         </div>
     );
 };

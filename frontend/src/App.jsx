@@ -6,7 +6,7 @@ import QuizSession from './components/QuizSession.jsx';
 const EnterpriseFooter = () => (
     <footer style={appStyles.footer}>
         <p style={appStyles.footerBranding}>Satly © 2025</p>
-        <p style={appStyles.footerText}>Impulsado por ⚡ Lightning Network.</p>
+        <p style={appStyles.footerText}>Desarrollado por Antonio Ramirez .</p>
     </footer>
 );
 
@@ -28,7 +28,7 @@ function App() {
 
             {/* HEADER MINIMALISTA: Centrado y con línea de Negro fuerte */}
             <header style={appStyles.header}>
-                <h1 style={appStyles.headerTitle}>Satly ⚡</h1>
+                <h1 style={appStyles.headerTitle}>Satly</h1>
             </header>
 
             <main style={appStyles.mainContent}>
