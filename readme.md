@@ -332,7 +332,7 @@ y deja que `server.js` sirva el contenido desde `frontend/dist` (ya está config
 
 Satly demuestra que aprender Bitcoin puede ser algo práctico, divertido y con incentivos reales en satoshis.
 
-# Como realizar purebas
+# Como realizar pruebas
 
 Para probar solo se modifican las credenciales del .env
 
