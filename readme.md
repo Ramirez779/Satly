@@ -330,17 +330,30 @@ y deja que `server.js` sirva el contenido desde `frontend/dist` (ya está config
 
 ---
 
-## 📌 Notas finales
+# Cómo realizar pruebas
 
-- Este proyecto está pensado como una **demo educativa** de cómo combinar:
-  - React + Vite en el frontend.
-  - Express en el backend.
-  - LNBits para pagos Lightning.
-- El monto de recompensa actual está fijado en **50 satoshis** (`REWARD_AMOUNT_SATS`) pero se puede ajustar en `satlyController.js`.
+Para probar el proyecto solo es necesario configurar correctamente las credenciales en el archivo `.env`.  
+Una vez actualizado, el sistema queda listo para ejecutar los quizzes y procesar las recompensas en satoshis.
 
-Satly demuestra que aprender Bitcoin puede ser algo práctico, divertido y con incentivos reales en satoshis.
+---
 
-# Como realizar pruebas
+## 🌱 Potencial futuro de Satly
 
-Para probar solo se modifican las credenciales del .env
+Satly no es solo un prototipo técnico, sino una base sólida para una plataforma educativa con mucho futuro.  
+Al combinar contenido sobre Bitcoin y Lightning Network con recompensas reales en satoshis, el proyecto puede:
 
+- Escalar a más escuelas, comunidades y países que quieran enseñar Bitcoin de forma práctica.
+- Integrar nuevos módulos de aprendizaje (seguridad, wallets, uso cotidiano, comercios, etc.).
+- Conectarse con otras herramientas del ecosistema Lightning (LNURL-auth, tiendas, juegos, etc.).
+- Servir como laboratorio para probar dinámicas de incentivos con micropagos.
+- Adaptarse a distintos niveles educativos y perfiles de usuario.
+
+Satly no es solo un proyecto; es una **propuesta de futuro**.  
+Plantea una forma distinta de enseñar Bitcoin: no solo desde la teoría, sino desde la experiencia, el juego y las recompensas en satoshis.  
+Más que una app, Satly puede convertirse en una **plataforma de referencia** para que estudiantes, docentes y comunidades aprendan a usar Bitcoin de verdad, paso a paso, mientras se divierten y reciben incentivos que conectan el aprendizaje con la economía digital del mundo real.
+
+Con una buena estrategia de contenido, métricas de uso y mejoras en la experiencia de usuario, Satly puede evolucionar de demo educativa a una solución estable para aprender Bitcoin jugando y ganando sats.
+
+---
+
+## Hecho con todo amor y cariño por **grupo 42** ❤️
